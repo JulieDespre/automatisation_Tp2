@@ -9,9 +9,9 @@ class Employee extends Model
 {
     protected $table = 'employees';
 
-    public function company(): BelongsTo
+    public function office(): BelongsTo
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(Office::class);
     }
 
     public function getDisplayName(): string
