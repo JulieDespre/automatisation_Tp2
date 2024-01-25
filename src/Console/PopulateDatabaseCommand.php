@@ -36,58 +36,60 @@ class PopulateDatabaseCommand extends Command
     {
         $output->writeln('Populate database...');
         // Un nombre aléatoire entre 1 et 5
-        $randomNumber = rand(1, 1);
+        $randomNumber = rand(1, 5);
         for ($i = 0; $i < $randomNumber; $i++) {
             // Code à exécuter ds boucle
             $company = $this->createCompany();
+        
+        //créer un nombre aléatoire de bureaux entre 1 et 4
+        for ($j = 0; $j < rand(1, 4); $j++) {
+            $office = $this->createOffice($company);
+
+            // Si c'est le premier bureau, le définir comme siège social
+            if ($j == 0) {
+                $company->head_office_id = $office->id;
+                $company->save();
+            }
+            //créer un nombre aléatoire d'employés entre 2 et 8
+            for ($k = 0; $k < rand(2, 8); $k++) {
+                $this->createEmployee($office);
+            }
         }
-
-
-        $output->writeln('Database created successfully');
-        return 0;
     }
+
+
+        $output->writeln('La base de donnée à bien été peuplée');
+        return 0;
+}
+
 
     private function createCompany(): Company
     {
-        //compagny avec le modèle éloquant
+        //généré les données concernant la table company grace à faker
+        
         $company = new Company();
-        $company->name = $this->faker->name;
-        $company->id = $this->faker->numberBetween(1, 20);
+        $company->name = $this->faker->company;
         $company->save();
 
-        // Un nombre aléatoire entre 1 et 10
-        $randomNumber = rand(1, 1);
-        for ($i = 0; $i < $randomNumber; $i++) {
-            // Code à exécuter ds boucle
-            $office = $this->createOffice($company);
-            $company->offices()->save($office);
-        }
         $company->headOffice($office);
         $company->save();
         return $company;
     }
     private function createOffice(Company $company): Office
     {
-        $office = new Office();
+        $office = $company->offices()->make();
 
-        $office->id = $this->faker->numberBetween(1, 100);
-        $office->name = $this->faker->name;
+        $office->name = $this->faker->company;
         $office->address = $this->faker->address;
         $office->city = $this->faker->city;
         $office->zip_code = $this->faker->postcode;
         $office->country = $this->faker->country;
-        $office->email = $this->faker->email;
+        $office->email = "contact@$companyName.com";
         $office->phone = $this->faker->phoneNumber;
-        $office->company()->associate($company);
+        $company->website = "https://$companyName.com/";
+        $company->image = $faker->imageUrl;
+        
         $office->save();
-
-        // Un nombre aléatoire entre 1 et 20
-        $randomNumber = rand(1, 1);
-        for ($i = 0; $i < $randomNumber; $i++) {
-            // Code à exécuter ds boucle
-            $employee = $this->createEmployee($office);
-            $office->employees()->save($employee);
-        }
 
         return $office;
     }
@@ -95,13 +97,14 @@ class PopulateDatabaseCommand extends Command
     private function createEmployee(Office $office): Employee
     {
         $employee = new Employee();
-        $employee->id = $this->faker->numberBetween(1, 100);
+    
+        $employee = $office->employees()->make();
         $employee->first_name = $this->faker->firstName;
         $employee->last_name = $this->faker->lastName;
         $employee->email = $this->faker->email;
         $employee->phone = $this->faker->phoneNumber;
         $employee->job_title = $this->faker->jobTitle;
-        $employee->office()->associate($office);
+   
         $employee->save();
 
         return $employee;
